@@ -113,21 +113,16 @@ class Lathe:
             lower_next = self.get_point_3d(i + step)
             self.add_next(upper_base, lower_base, upper_next, lower_next)
 
-    def write_svg(self, filename, close_first=True, close_last=True):
+    def write_svg(self, filename):
         dwg = svgwrite.Drawing(filename, size=('210mm', '297mm'),
                                viewBox=('0 0 210 297'))
-        self.draw_path(dwg, self.upper_2d_list)
-        self.draw_path(dwg, self.lower_2d_list)
-        if close_first:
-            self.draw_path(dwg, [self.upper_2d_list[0],
-                                 self.lower_2d_list[0]])
-        if close_last:
-            self.draw_path(dwg, [self.upper_2d_list[-1],
-                                 self.lower_2d_list[-1]])
+        self.draw_path(dwg, self.upper_2d_list + self.lower_2d_list[::-1])
         dwg.save()
 
 
-    def draw_path(self, dwg, points):
+    def draw_path(self, dwg, points, loop = True):
         d = [(['M'] if i == 0 else ['L']) + list(l)
              for i, l in enumerate(points)]
+        if loop:
+            d.append('z')
         dwg.add(dwg.path(d, stroke = 'black', fill = 'none'))
