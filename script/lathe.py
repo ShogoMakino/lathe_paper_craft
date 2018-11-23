@@ -13,9 +13,14 @@ class Lathe:
         self.set_width(width)
         self.set_cross_section(cross_section)
 
-    def run(self, filename, step = 2.0 * math.pi / 100):
-        self.expand(step)
-        self.write_svg(filename)
+
+    def run(self, filename, step = 2.0 * math.pi / 100, split = []):
+        split_start_list = [0.0] + split
+        split_end_list = split + [1.0]
+        self.open_svg(filename)
+        for start, end in zip(split_start_list, split_end_list):
+            points = self.expand(step, start, end)
+            self.draw_path(points)
 
     def set_width(self, width):
         self.width = width
@@ -70,59 +75,61 @@ class Lathe:
                 l = self.cross_section[-1][2] + dl
             self.cross_section.append(np.array([p[0], p[1], l]))
 
-    def add_next(self, upper_base, lower_base, upper_next, lower_next):
+    def add_next(self, upper_2d_list, lower_2d_list,
+                 upper_base, lower_base, upper_next, lower_next):
         thre = 1e-5
         base_dist = np.linalg.norm(upper_base - lower_base)
         next_dist = np.linalg.norm(upper_next - lower_next)
         upper_dist = np.linalg.norm(upper_next - upper_base)
         lower_dist = np.linalg.norm(lower_next - lower_base)
         diagonal_dist = np.linalg.norm(upper_next - lower_base)
-        if len(self.upper_2d_list) == 0:
-            self.upper_2d_list.append(np.array([0, 0]))
-        if len(self.lower_2d_list) == 0:
-            self.lower_2d_list.append(np.array([0, -base_dist]))
+        if len(upper_2d_list) == 0:
+            upper_2d_list.append(np.array([0, 0]))
+        if len(lower_2d_list) == 0:
+            lower_2d_list.append(np.array([0, -base_dist]))
 
         if upper_dist >= thre:
             if base_dist >= thre:
-                self.upper_2d_list.append(
-                    self.get_third_point(self.upper_2d_list[-1],
-                                         self.lower_2d_list[-1],
+                upper_2d_list.append(
+                    self.get_third_point(upper_2d_list[-1],
+                                         lower_2d_list[-1],
                                          upper_dist, diagonal_dist))
             else:
-                self.upper_2d_list.append(np.array([upper_dist, 0]))
+                upper_2d_list.append(np.array([upper_dist, 0]))
         if lower_dist >= thre:
             if diagonal_dist >= thre:
                 if next_dist >= thre:
-                    self.lower_2d_list.append(
-                        self.get_third_point(self.upper_2d_list[-1],
-                                             self.lower_2d_list[-1],
+                    lower_2d_list.append(
+                        self.get_third_point(upper_2d_list[-1],
+                                             lower_2d_list[-1],
                                              next_dist, lower_dist))
             else:
-                self.lower_2d_list.append(np.array([0, -next_dist]))
+                lower_2d_list.append(np.array([0, -next_dist]))
 
-    def expand(self, step = 2.0 * math.pi / 100):
-        self.upper_2d_list = [];
-        self.lower_2d_list = [];
+    def expand(self, step = 2.0 * math.pi / 100, start=0.0, end=1.0):
+        upper_2d_list = [];
+        lower_2d_list = [];
 
         theta_max = (2 * math.pi *
                      (1.0 * self.cross_section[-1][2] / self.width + 1))
-        for i in np.arange(0, theta_max, step):
+        for i in np.arange(theta_max * start, theta_max * end, step):
             upper_base = self.get_point_3d(i - 2 * math.pi)
             lower_base = self.get_point_3d(i)
             upper_next = self.get_point_3d(i - 2 * math.pi + step)
             lower_next = self.get_point_3d(i + step)
-            self.add_next(upper_base, lower_base, upper_next, lower_next)
+            self.add_next(upper_2d_list, lower_2d_list,
+                          upper_base, lower_base, upper_next, lower_next)
+        return upper_2d_list + lower_2d_list[::-1]
 
-    def write_svg(self, filename):
-        dwg = svgwrite.Drawing(filename, size=('210mm', '297mm'),
-                               viewBox=('0 0 210 297'))
-        self.draw_path(dwg, self.upper_2d_list + self.lower_2d_list[::-1])
-        dwg.save()
+    def open_svg(self, filename):
+        self.dwg = svgwrite.Drawing(filename, size=('210mm', '297mm'),
+                                    viewBox=('0 0 210 297'))
 
 
-    def draw_path(self, dwg, points, loop = True):
+    def draw_path(self, points, loop = True):
         d = [(['M'] if i == 0 else ['L']) + list(l)
              for i, l in enumerate(points)]
         if loop:
             d.append('z')
-        dwg.add(dwg.path(d, stroke = 'black', fill = 'none'))
+        self.dwg.add(self.dwg.path(d, stroke = 'black', fill = 'none'))
+        self.dwg.save()
