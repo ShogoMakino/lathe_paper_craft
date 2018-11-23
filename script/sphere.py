@@ -13,5 +13,5 @@ def sphere_cross_section(r, divide = 20):
     return points
 
 if __name__ == '__main__':
-    lathe = Lathe(sphere_cross_section(20), 10)
-    lathe.run("sphere.svg")
+    lathe = Lathe("sphere.svg")
+    lathe.spiral(sphere_cross_section(20), 10)
