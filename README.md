@@ -7,6 +7,8 @@ lathe = Lathe("sample.svg")
 lathe.cone(20, 10, 10)
 ```
 
+出力したsvgファイルではオブジェクトがきれいに配置されていないのでinkscape等を用いて編集する
+
 ## Methods
 ### 一般の回転体
 * spiral(cross_section, width, [split=[]])
