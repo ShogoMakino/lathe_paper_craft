@@ -26,5 +26,7 @@ def apple_cross_section():
     return points
 
 if __name__ == '__main__':
-    lathe = Lathe(apple_cross_section(), 15)
-    lathe.run("apple.svg", split = [0.5])
+    lathe = Lathe("apple.svg")
+    lathe.spiral(apple_cross_section(), 15, split = [0.5])
+    lathe.cone(10, 0, 15)
+    lathe.cone(15, 0, 15)
