@@ -27,4 +27,4 @@ def apple_cross_section():
 
 if __name__ == '__main__':
     lathe = Lathe(apple_cross_section(), 15)
-    lathe.run("apple.svg")
+    lathe.run("apple.svg", split = [0.5])
