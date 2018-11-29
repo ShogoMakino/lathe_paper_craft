@@ -5,7 +5,7 @@ import numpy as np
 import math
 from lathe import Lathe
 
-def sphere_cross_section(r, divide = 20):
+def sphere_cross_section(r, divide=20):
     points = []
     for i in range(divide + 1):
         theta = math.pi * i / divide
@@ -15,3 +15,4 @@ def sphere_cross_section(r, divide = 20):
 if __name__ == '__main__':
     lathe = Lathe("sphere.svg")
     lathe.spiral(sphere_cross_section(20), 10)
+    lathe.save()

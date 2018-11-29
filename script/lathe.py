@@ -6,7 +6,7 @@ import numpy as np
 import math
 
 class Lathe:
-    def __init__(self, filename, step = 2.0 * math.pi / 100):
+    def __init__(self, filename, step=2.0*math.pi/100):
         self.set_step(step)
         self.dwg = svgwrite.Drawing(filename, size=('210mm', '297mm'),
                                     viewBox=('0 0 210 297'))
@@ -14,7 +14,7 @@ class Lathe:
     def set_step(self, step):
         self.step = step
 
-    def spiral(self, cross_section_points, width, split = []):
+    def spiral(self, cross_section_points, width, split=[]):
         cross_model = self.__get_cross_model(cross_section_points)
         split_start_list = [0.0] + split
         split_end_list = split + [1.0]
@@ -22,14 +22,14 @@ class Lathe:
             points = self.__expand_spiral(cross_model, width, start, end)
             self.__draw_path(points)
 
-    def cone(self, bottom_radius, top_radius, height, split = []):
+    def cone(self, bottom_radius, top_radius, height, split=[]):
         split_start_list = [0.0] + split
         split_end_list = split + [1.0]
         for start, end in zip(split_start_list, split_end_list):
             points = self.__expand_cone(bottom_radius, top_radius, height, start, end)
             self.__draw_path(points)
 
-    def __expand_spiral(self, cross_model, width, start = 0.0, end = 1.0):
+    def __expand_spiral(self, cross_model, width, start=0.0, end=1.0):
         upper_2d_list = [];
         lower_2d_list = [];
         theta_max = 2 * math.pi * (1.0 * cross_model[-1][2] / width + 1)
@@ -42,7 +42,7 @@ class Lathe:
                             upper_base, lower_base, upper_next, lower_next)
         return upper_2d_list + lower_2d_list[::-1]
 
-    def __expand_cone(self, bottom_radius, top_radius, height, start = 0.0, end = 1.0):
+    def __expand_cone(self, bottom_radius, top_radius, height, start=0.0, end=1.0):
         upper_2d_list = [];
         lower_2d_list = [];
         theta_max = 2 * math.pi
@@ -142,10 +142,9 @@ class Lathe:
             else:
                 lower_2d_list.append(np.array([0, -next_dist]))
 
-    def __draw_path(self, points, loop = True):
+    def __draw_path(self, points, loop=True):
         d = [(['M'] if i == 0 else ['L']) + list(l)
              for i, l in enumerate(points)]
         if loop:
             d.append('z')
         self.dwg.add(self.dwg.path(d, stroke = 'black', fill = 'none'))
-        self.dwg.save()
